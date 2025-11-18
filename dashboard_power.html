@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд Команди</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+            margin: 0;
+            overflow: auto;
+        }
+
+        .container {
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        header {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        h1 {
+            color: #333;
+            margin: 0;
+            font-size: 20px;
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        .header-icon {
+            font-size: 28px;
+        }
+
+        .date-info {
+            color: #666;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .info-block {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #f59e0b;
+        }
+
+        .info-text {
+            color: #333;
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .table-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .table-container h3 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            border-bottom: 2px solid #f59e0b;
+            padding-bottom: 8px;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        thead {
+            background: #fffbeb;
+            position: sticky;
+            top: 42px;
+            z-index: 9;
+        }
+
+        th {
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #fcd34d;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #666;
+        }
+
+        tr:hover {
+            background: #fffbeb;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        tbody tr:nth-child(even):hover {
+            background: #fffbeb;
+        }
+
+        .image-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .image-container h3 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            border-bottom: 2px solid #f59e0b;
+            padding-bottom: 8px;
+        }
+
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin-top: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .nav-buttons {
+                justify-content: center;
+            }
+
+            h1 {
+                font-size: 16px;
+            }
+
+            .info-text {
+                font-size: 14px;
+            }
+
+            table {
+                font-size: 10px;
+            }
+
+            th, td {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <div class="header-icon">🏆</div>
+                <div>
+                    <h1>Команди</h1>
+                    <span class="date-info">Оновлено: <span id="updateTime">--:--</span></span>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <a href="dashboard.html" class="nav-btn">📊 Виробництво</a>
+                <a href="dashboard_employees.html" class="nav-btn">👥 Співробітники</a>
+                <a href="dashboard_defects.html" class="nav-btn">🔴 Відхилення</a>
+                <a href="dashboard_safety.html" class="nav-btn">🛡️ ОП</a>
+                <button class="nav-btn active" disabled>🏆 Команди</button>
+                <a href="dashboard_announcements.html" class="nav-btn">📢 Оголошення</a>
+                <a href="dashboard_proposals.html" class="nav-btn">💡 Пропозиції</a>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- Блок з текстом з клітинки F1 -->
+            <div class="info-block">
+                <div class="info-text" id="infoText">
+                    <div class="loading">Завантаження...</div>
+                </div>
+            </div>
+
+            <!-- Таблиця з даними -->
+            <div class="table-container">
+                <h3>📋 Дані по учасникам</h3>
+                <table id="dataTable">
+                    <thead>
+                        <tr id="tableHeader">
+                            <th>Завантаження...</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="100%" style="text-align: center; padding: 20px;">
+                                Завантаження даних...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Блок з зображенням -->
+            <div class="image-container">
+                <h3>📸 Схема</h3>
+                <img src="https://drive.google.com/uc?export=view&id=1IOyW-ftAvcXbamIyGkp1YFsroH6bj3Tc" 
+                     alt="Схема" 
+                     id="schemaImage"
+                     onerror="this.onerror=null; this.src='https://lh3.googleusercontent.com/d/1IOyW-ftAvcXbamIyGkp1YFsroH6bj3Tc';">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // URL Google Apps Script для отримання даних
+        const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
+        window.addEventListener('load', () => {
+            loadData();
+            setInterval(loadData, 5 * 60 * 1000); // Оновлюємо кожні 5 хвилин
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+
+        async function loadData() {
+            try {
+                console.log('📊 Завантаження даних...');
+                
+                // JSONP для обходу CORS
+                return new Promise((resolve, reject) => {
+                    const callbackName = 'jsonpCallback_' + Math.random().toString(36).substr(2, 9);
+                    
+                    window[callbackName] = function(data) {
+                        console.log('✅ Дані отримано:', data);
+                        
+                        if (data.error) {
+                            console.error('❌ Помилка:', data.error);
+                            showError();
+                        } else {
+                            updateInfoBlock(data.infoText);
+                            updateTable(data.tableData);
+                        }
+                        
+                        delete window[callbackName];
+                        resolve();
+                    };
+                    
+                    const script = document.createElement('script');
+                    script.src = SCRIPT_URL + '?callback=' + callbackName;
+                    script.onerror = function() {
+                        console.error('❌ Помилка завантаження');
+                        delete window[callbackName];
+                        showSampleData(); // Показуємо демо-дані при помилці
+                        reject();
+                    };
+                    document.head.appendChild(script);
+                });
+            } catch (error) {
+                console.error('❌ Помилка:', error);
+                showSampleData();
+            }
+        }
+
+        function updateInfoBlock(text) {
+            const infoTextElement = document.getElementById('infoText');
+            infoTextElement.textContent = text || 'Немає даних';
+        }
+
+        function updateTable(tableData) {
+            if (!tableData || tableData.length === 0) {
+                showError();
+                return;
+            }
+
+            // Перший рядок - це заголовки
+            const headers = tableData[0];
+            const rows = tableData.slice(1);
+
+            // Оновлюємо заголовки
+            const headerRow = document.getElementById('tableHeader');
+            headerRow.innerHTML = '';
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+
+            // Оновлюємо дані
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            rows.forEach(row => {
+                const tr = document.createElement('tr');
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+        function showError() {
+            document.getElementById('infoText').textContent = 'Помилка завантаження даних';
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #ef4444;">Не вдалося завантажити дані</td></tr>';
+        }
+
+        function showSampleData() {
+            // Демо-дані для прикладу (відповідають структурі вашої таблиці)
+            document.getElementById('infoText').textContent = 'Команда, що перемогла у ЛИСТОПАДІ А-2 та заробила 4.33 бали';
+            
+            const sampleData = [
+                ['Команда', 'Участники команды', 'Кол-во баллов', 'ГРН. на балансе'],
+                ['А-1', 'Краули А.', '10,15', '2030'],
+                ['А-1', 'Гладкий Е.', '17', '5000'],
+                ['А-1', 'Пайметов Д.', '30,45', '6090'],
+                ['А-1', 'Липка А.', '30,45', '6090'],
+                ['А-2', 'Дон', '4,24', '848'],
+                ['А-2', 'Семененко И.', '4,24', '848'],
+                ['B', 'Кисіль А.', '0', '0'],
+                ['C', 'Пащенко В.', '4,23', '846'],
+                ['D', 'Куленко Р.', '4,4', '880']
+            ];
+            
+            updateTable(sampleData);
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('uk-UA', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('updateTime').textContent = time;
+        }
+    </script>
+</body>
+</html>

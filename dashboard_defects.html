@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система обліку операційних показників - Аналіз ОТК</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            background: #FFD700;
+            padding: 5px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 20px;
+            color: #000;
+        }
+
+        h1 {
+            font-size: 22px;
+            color: #333;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            border: 2px solid #ef4444;
+            background: white;
+            color: #ef4444;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: #ef4444;
+            color: white;
+        }
+
+        .filters-section {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            min-width: 150px;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #ef4444;
+        }
+
+        button.reset-btn {
+            padding: 8px 16px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-top: 20px;
+        }
+
+        button.reset-btn:hover {
+            background: #dc2626;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .metric-card.highlight {
+            background: #FFF9E6;
+            border: 2px solid #FFD700;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .metric-card.highlight .metric-value {
+            color: #000;
+        }
+
+        .metric-unit {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+        }
+
+        .chart-wrapper.tall {
+            height: 500px;
+        }
+
+        .legend-custom {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 8px;
+            margin-top: 15px;
+            font-size: 11px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            h1 {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 16px;
+            }
+
+            .logo {
+                font-size: 16px;
+                padding: 5px 10px;
+            }
+
+            .filters-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metric-value {
+                font-size: 20px;
+            }
+
+            .nav-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <div class="logo">DLIGHT</div>
+                <h1>Система обліку операційних показників</h1>
+            </div>
+            <div class="nav-buttons">
+                <a href="dashboard.html" class="nav-btn">📊 Виробництво</a>
+                <a href="dashboard_employees.html" class="nav-btn">👥 Співробітники</a>
+                <button class="nav-btn active" disabled>🔴 Відхилення</button>
+                <a href="dashboard_safety.html" class="nav-btn">🛡️ ОП</a>
+                <a href="dashboard_power.html" class="nav-btn">🏆 Команди</a>
+                <a href="dashboard_announcements.html" class="nav-btn">📢 Оголошення</a>
+                <a href="dashboard_proposals.html" class="nav-btn">💡 Пропозиції</a>
+            </div>
+        </header>
+
+        <!-- Фільтри -->
+        <div class="filters-section">
+            <div class="filter-group">
+                <label>Участок на котором возникла брака</label>
+                <select id="filterLocation">
+                    <option value="">Всі ділянки</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Місяць</label>
+                <select id="filterMonth">
+                    <option value="">Всі місяці</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Продукт</label>
+                <select id="filterProduct">
+                    <option value="">Всі продукти</option>
+                </select>
+            </div>
+            <button class="reset-btn" onclick="resetFilters()">Скинути фільтри</button>
+        </div>
+
+        <!-- Метрики -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Загальна кількість браку, шт</div>
+                <div class="metric-value" id="metricTotalDefects">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Виправлено на виробництві, шт</div>
+                <div class="metric-value" id="metricFixed">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Відправлено з браком, шт</div>
+                <div class="metric-value" id="metricSent">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Витрати на усунення, грн</div>
+                <div class="metric-value" id="metricCost">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Вартість деталі, грн</div>
+                <div class="metric-value" id="metricPartCost">0</div>
+            </div>
+            <div class="metric-card highlight">
+                <div class="metric-label">Итого потерь, грн</div>
+                <div class="metric-value" id="metricTotalLoss">0</div>
+            </div>
+        </div>
+
+        <!-- Графіки -->
+        <div class="charts-grid">
+            <!-- Браки по ділянках -->
+            <div class="chart-container full-width">
+                <div class="chart-title">Кількість браку по ділянках</div>
+                <div class="chart-wrapper">
+                    <canvas id="defectsByLocationChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Діаграма по ділянкам -->
+            <div class="chart-container">
+                <div class="chart-title">Розподіл браків по ділянкам</div>
+                <div class="chart-wrapper">
+                    <canvas id="defectsPieChart"></canvas>
+                </div>
+                <div class="legend-custom" id="pieLegend"></div>
+            </div>
+
+            <!-- Браки по продуктам -->
+            <div class="chart-container">
+                <div class="chart-title">ТОП-15 продуктів з браком</div>
+                <div class="chart-wrapper tall">
+                    <canvas id="defectsByProductChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loadingIndicator">Завантаження даних...</div>
+    </div>
+
+    <script>
+        // URL Google Apps Script
+        const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
+        let allData = [];
+        let filteredData = [];
+        let charts = {};
+
+        // Індекси стовпців (відповідно до скріншоту)
+        const COLUMNS = {
+            DATE: 0,          // Дата
+            MONTH: 1,         // Місяць
+            QUARTER: 2,       // Квартал
+            YEAR: 3,          // Рік
+            PRODUCT: 4,       // Продукт на котором возникла брака
+            LOCATION: 5,      // Участок на котором возникла брака
+            QUANTITY: 6,      // Кількість виявленого браку
+            FIXED: 8,         // Виправили в компанії
+            SENT: 9,          // Затраты на устранения на бране (желтый столбец)
+            COST: 13,         // Стоимость работ по дефекту
+            PART_COST: 14,    // Вартість деталі
+            TOTAL_LOSS: 17    // Общие потери
+        };
+
+        window.addEventListener('load', () => {
+            loadData();
+        });
+
+        async function loadData() {
+            try {
+                console.log('📊 Завантаження даних...');
+                
+                return new Promise((resolve, reject) => {
+                    const callbackName = 'jsonpCallback_' + Math.random().toString(36).substr(2, 9);
+                    
+                    window[callbackName] = function(data) {
+                        console.log('✅ Дані отримано:', data);
+                        
+                        if (data.error) {
+                            console.error('❌ Помилка:', data.error);
+                            showError();
+                        } else {
+                            allData = data.data || [];
+                            filteredData = [...allData];
+                            updateDashboard();
+                            populateFilters();
+                            document.getElementById('loadingIndicator').style.display = 'none';
+                        }
+                        
+                        delete window[callbackName];
+                        resolve();
+                    };
+                    
+                    const script = document.createElement('script');
+                    script.src = SCRIPT_URL + '?action=getDefectsData&callback=' + callbackName;
+                    script.onerror = function() {
+                        console.error('❌ Помилка завантаження');
+                        delete window[callbackName];
+                        showError();
+                        reject();
+                    };
+                    document.head.appendChild(script);
+                });
+            } catch (error) {
+                console.error('❌ Помилка:', error);
+                showError();
+            }
+        }
+
+        function showError() {
+            document.getElementById('loadingIndicator').innerHTML = '❌ Помилка завантаження даних. Перевірте налаштування Google Apps Script.';
+        }
+
+        function populateFilters() {
+            // Заповнюємо фільтр ділянок
+            const locations = [...new Set(allData.map(row => row[COLUMNS.LOCATION]).filter(val => val))];
+            const locationSelect = document.getElementById('filterLocation');
+            locationSelect.innerHTML = '<option value="">Всі ділянки</option>';
+            locations.forEach(loc => {
+                const option = document.createElement('option');
+                option.value = loc;
+                option.textContent = loc;
+                locationSelect.appendChild(option);
+            });
+
+            // Заповнюємо фільтр місяців
+            const months = [...new Set(allData.map(row => row[COLUMNS.MONTH]).filter(val => val))];
+            const monthSelect = document.getElementById('filterMonth');
+            monthSelect.innerHTML = '<option value="">Всі місяці</option>';
+            months.forEach(month => {
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            });
+
+            // Заповнюємо фільтр продуктів
+            const products = [...new Set(allData.map(row => row[COLUMNS.PRODUCT]).filter(val => val))];
+            const productSelect = document.getElementById('filterProduct');
+            productSelect.innerHTML = '<option value="">Всі продукти</option>';
+            products.forEach(prod => {
+                const option = document.createElement('option');
+                option.value = prod;
+                option.textContent = prod;
+                productSelect.appendChild(option);
+            });
+
+            // Додаємо обробники подій
+            document.querySelectorAll('select').forEach(select => {
+                select.addEventListener('change', applyFilters);
+            });
+        }
+
+        function applyFilters() {
+            const locationFilter = document.getElementById('filterLocation').value;
+            const monthFilter = document.getElementById('filterMonth').value;
+            const productFilter = document.getElementById('filterProduct').value;
+
+            filteredData = allData.filter(row => {
+                if (locationFilter && row[COLUMNS.LOCATION] !== locationFilter) return false;
+                if (monthFilter && row[COLUMNS.MONTH] !== monthFilter) return false;
+                if (productFilter && row[COLUMNS.PRODUCT] !== productFilter) return false;
+                return true;
+            });
+
+            updateDashboard();
+        }
+
+        function resetFilters() {
+            document.getElementById('filterLocation').value = '';
+            document.getElementById('filterMonth').value = '';
+            document.getElementById('filterProduct').value = '';
+            filteredData = [...allData];
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            // Розраховуємо метрики
+            let totalDefects = 0;
+            let totalFixed = 0;
+            let totalSent = 0;
+            let totalCost = 0;
+            let totalPartCost = 0;
+            let totalLoss = 0;
+
+            filteredData.forEach(row => {
+                totalDefects += parseFloat(row[COLUMNS.QUANTITY]) || 0;
+                totalFixed += parseFloat(row[COLUMNS.FIXED]) || 0;
+                totalSent += parseFloat(row[COLUMNS.SENT]) || 0;
+                totalCost += parseFloat(row[COLUMNS.COST]) || 0;
+                totalPartCost += parseFloat(row[COLUMNS.PART_COST]) || 0;
+                totalLoss += parseFloat(row[COLUMNS.TOTAL_LOSS]) || 0;
+            });
+
+            // Оновлюємо метрики
+            document.getElementById('metricTotalDefects').textContent = Math.round(totalDefects).toLocaleString();
+            document.getElementById('metricFixed').textContent = Math.round(totalFixed).toLocaleString();
+            document.getElementById('metricSent').textContent = Math.round(totalSent).toLocaleString();
+            document.getElementById('metricCost').textContent = Math.round(totalCost).toLocaleString();
+            document.getElementById('metricPartCost').textContent = Math.round(totalPartCost).toLocaleString();
+            document.getElementById('metricTotalLoss').textContent = Math.round(totalLoss).toLocaleString();
+
+            // Оновлюємо графіки
+            updateCharts();
+        }
+
+        function updateCharts() {
+            updateDefectsByLocationChart();
+            updateDefectsPieChart();
+            updateDefectsByProductChart();
+        }
+
+        function updateDefectsByLocationChart() {
+            const locationStats = {};
+            
+            filteredData.forEach(row => {
+                const location = row[COLUMNS.LOCATION];
+                if (!location) return;
+                
+                if (!locationStats[location]) {
+                    locationStats[location] = { defects: 0 };
+                }
+                locationStats[location].defects += parseFloat(row[COLUMNS.QUANTITY]) || 0;
+            });
+
+            const sortedLocations = Object.entries(locationStats)
+                .sort((a, b) => b[1].defects - a[1].defects);
+
+            const ctx = document.getElementById('defectsByLocationChart');
+            if (charts.defectsByLocation) charts.defectsByLocation.destroy();
+
+            charts.defectsByLocation = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedLocations.map(([location]) => location),
+                    datasets: [{
+                        label: 'Кількість браку',
+                        data: sortedLocations.map(([, stats]) => stats.defects),
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function updateDefectsPieChart() {
+            const locationStats = {};
+            
+            filteredData.forEach(row => {
+                const location = row[COLUMNS.LOCATION];
+                if (!location) return;
+                
+                if (!locationStats[location]) {
+                    locationStats[location] = 0;
+                }
+                locationStats[location] += parseFloat(row[COLUMNS.QUANTITY]) || 0;
+            });
+
+            const colors = [
+                '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+                '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16',
+                '#a855f7', '#eab308', '#22c55e', '#f43f5e', '#6366f1'
+            ];
+
+            const ctx = document.getElementById('defectsPieChart');
+            if (charts.defectsPie) charts.defectsPie.destroy();
+
+            const labels = Object.keys(locationStats);
+            const data = Object.values(locationStats);
+
+            charts.defectsPie = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Створюємо власну легенду
+            const legendContainer = document.getElementById('pieLegend');
+            legendContainer.innerHTML = '';
+            labels.forEach((label, index) => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                legendItem.innerHTML = `
+                    <div class="legend-color" style="background: ${colors[index]}"></div>
+                    <span>${label}</span>
+                `;
+                legendContainer.appendChild(legendItem);
+            });
+        }
+
+        function updateDefectsByProductChart() {
+            const productStats = {};
+            
+            filteredData.forEach(row => {
+                const product = row[COLUMNS.PRODUCT];
+                if (!product) return;
+                
+                if (!productStats[product]) {
+                    productStats[product] = 0;
+                }
+                productStats[product] += parseFloat(row[COLUMNS.QUANTITY]) || 0;
+            });
+
+            const sortedProducts = Object.entries(productStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15); // ТОП-15
+
+            const ctx = document.getElementById('defectsByProductChart');
+            if (charts.defectsByProduct) charts.defectsByProduct.destroy();
+
+            charts.defectsByProduct = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedProducts.map(([product]) => product),
+                    datasets: [{
+                        label: 'Кількість браку',
+                        data: sortedProducts.map(([, count]) => count),
+                        backgroundColor: '#ef4444'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
